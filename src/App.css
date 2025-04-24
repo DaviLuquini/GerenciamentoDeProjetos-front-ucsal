@@ -1,0 +1,29 @@
+/* Reseta margens e paddings */
+* {
+  margin: 0;
+  padding: 0;
+  font-family: Helvetica;
+  box-sizing: border-box;
+  text-shadow: black 1px 1px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("assets/pngtree-blue-gradient-wavy-background-vector-image_16153040.jpg");
+  background-size: cover;
+  background-position: center;
+}
+
+.App {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  width: 100%;
+  flex-direction: column;
+}
