@@ -8,6 +8,12 @@ const DashboardProfessor = () => {
     const [groups, setGroups] = useState([]);
     const [error, setError] = useState('');
     const [selectedProject, setSelectedProject] = useState(null);
+    const [nomeProjeto, setNomeProjeto] = useState('');
+    const [objetivo, setObjetivo] = useState('');
+    const [dataInicio, setDataInicio] = useState('');
+    const [escopo, setEscopo] = useState('');
+    const [publicoAlvo, setPublicoAlvo] = useState('');
+
 
     useEffect(() => {
         if (activeTab === 'projects') {
@@ -18,7 +24,7 @@ const DashboardProfessor = () => {
     }, [activeTab]);
 
     const fetchProjects = async () => {
-        const professorId = localStorage.getItem('userId'); 
+        const professorId = localStorage.getItem('userId');
 
         if (!professorId) {
             setError('ID do professor não encontrado.');
@@ -41,7 +47,7 @@ const DashboardProfessor = () => {
 
             const data = await response.json();
             console.log("Projetos carregados:", data);
-            setProjects(data || []); 
+            setProjects(data || []);
         } catch (err) {
             console.error('Erro na requisição:', err);
             setError('Erro ao conectar com o servidor.');
@@ -65,7 +71,7 @@ const DashboardProfessor = () => {
 
             const data = await response.json();
             console.log("Grupos carregados:", data);
-            setGroups(data || []); 
+            setGroups(data || []);
         } catch (err) {
             console.error('Erro na requisição:', err);
             setError('Erro ao conectar com o servidor.');
@@ -73,7 +79,7 @@ const DashboardProfessor = () => {
     };
 
     const getStatusText = (status) => {
-        switch(status) {
+        switch (status) {
             case 'AGUARDANDO_ANALISE':
                 return 'Aguardando Análise';
             case 'EM_ANDAMENTO':
@@ -88,7 +94,7 @@ const DashboardProfessor = () => {
     };
 
     const getStatusClass = (status) => {
-        switch(status) {
+        switch (status) {
             case 'AGUARDANDO_ANALISE':
                 return 'status-pending';
             case 'EM_ANDAMENTO':
@@ -110,44 +116,86 @@ const DashboardProfessor = () => {
     const handleCloseDetails = () => {
         setSelectedProject(null);
     };
-    
+
     const handleConfirmDelivery = async (project) => {
-        const projetoRequest = {
-            nome: project.nome,
-            id: project.id
+        const confirmarProjetoRequest = {
+            id: project.id,
+            nome: project.nome
         };
-    
+
         try {
-            const response = await fetch('http://localhost:8080/projeto/confirmarEntregaProjeto', {
+            const response = await fetch('http://localhost:8080/professor/confirmarEntregaProjeto', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify(projetoRequest)
+
+                body: JSON.stringify(confirmarProjetoRequest)
             });
-    
+
             if (!response.ok) {
                 const errorText = await response.text();
                 setError(errorText || 'Erro ao confirmar entrega');
                 return;
             }
-    
+
             const successMessage = await response.text();
-            alert(successMessage);
+
             fetchProjects();
         } catch (err) {
             console.error('Erro na requisição:', err);
             setError('Erro ao conectar com o servidor.');
         }
     };
-    
-    
 
-    const handleNewProject = (e) => {
+
+
+    const handleNewProject = async (e) => {
         e.preventDefault();
-        console.log("Novo projeto submetido");
-        setShowNewProjectForm(false);
+
+        const professorId = localStorage.getItem('userId');
+        if (!professorId) {
+            setError('ID do professor não encontrado.');
+            return;
+        }
+
+        const novoProjeto = {
+            nome: nomeProjeto,
+            objetivo,
+            escopo,
+            publicoAlvo,
+            dataInicio,
+            professorId
+        };
+
+        try {
+            const response = await fetch('http://localhost:8080/professor/solicitarProjeto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify(novoProjeto),
+            });
+
+            if (!response.ok) {
+                const errorMsg = await response.text();
+                setError(errorMsg || 'Erro ao solicitar projeto.');
+                return;
+            }
+
+            await fetchProjects();
+            setShowNewProjectForm(false);
+            setNomeProjeto('');
+            setObjetivo('');
+            setDataInicio('');
+            setEscopo('');
+            setPublicoAlvo('');
+        } catch (err) {
+            console.error('Erro na requisição:', err);
+            setError('Erro ao conectar com o servidor.');
+        }
     };
 
     const formatDate = (dateString) => {
@@ -221,13 +269,13 @@ const DashboardProfessor = () => {
                                                 </span>
                                             </td>
                                             <td>
-                                                <button 
+                                                <button
                                                     className="dashboard-button"
                                                     onClick={() => handleProjectDetails(project)}
                                                 >
                                                     Detalhes
                                                 </button>
-                                                <button 
+                                                <button
                                                     className="dashboard-button"
                                                     onClick={() => handleConfirmDelivery(project)}
                                                 >
@@ -290,29 +338,30 @@ const DashboardProfessor = () => {
                     <form className="dashboard-form" onSubmit={handleNewProject}>
                         <div>
                             <label>Nome do Projeto</label>
-                            <input type="text" required />
+                            <input type="text" value={nomeProjeto} onChange={e => setNomeProjeto(e.target.value)} required />
                         </div>
                         <div>
                             <label>Objetivo</label>
-                            <textarea required></textarea>
+                            <textarea value={objetivo} onChange={e => setObjetivo(e.target.value)} required></textarea>
                         </div>
                         <div>
                             <label>Data de Início Esperada</label>
-                            <input type="date" required />
+                            <input type="date" value={dataInicio} onChange={e => setDataInicio(e.target.value)} required />
                         </div>
                         <div>
                             <label>Escopo</label>
-                            <textarea required></textarea>
+                            <textarea value={escopo} onChange={e => setEscopo(e.target.value)} required></textarea>
                         </div>
                         <div>
                             <label>Público-Alvo</label>
-                            <input type="text" required />
+                            <input type="text" value={publicoAlvo} onChange={e => setPublicoAlvo(e.target.value)} required />
                         </div>
                         <button type="submit" className="dashboard-button">Solicitar Projeto</button>
                         <button type="button" className="dashboard-button" onClick={() => setShowNewProjectForm(false)}>
                             Cancelar
                         </button>
                     </form>
+
                 </div>
             )}
         </div>

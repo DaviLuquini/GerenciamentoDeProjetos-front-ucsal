@@ -194,3 +194,11 @@
 .dashboard-card ul li:last-child {
     border-bottom: none;
 } 
+
+.dashboard-details {
+    margin-top: 20px;
+    padding: 16px;
+    background-color: #f5f5f5;
+    border-left: 4px solid #007bff;
+    border-radius: 8px;
+}

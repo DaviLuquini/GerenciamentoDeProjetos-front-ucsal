@@ -10,9 +10,10 @@ const Register = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        userType: "aluno" // valor padrão
+        userType: "aluno", // valor padrão
+        grupoId: ""
     });
-    
+
     const [errors, setErrors] = useState({});
 
     const handleChange = (e) => {
@@ -57,6 +58,13 @@ const Register = () => {
             isValid = false;
         }
 
+        // Validate grupoID 
+        if (formData.userType === "aluno" && !formData.grupoId.trim()) {
+            newErrors.grupoId = "ID do grupo é obrigatório para alunos";
+            isValid = false;
+        }
+
+
         setErrors(newErrors);
         return isValid;
     };
@@ -92,22 +100,23 @@ const Register = () => {
                     email: formData.email,
                     nome: formData.fullName,
                     senha: formData.password,
-                    tipoUsuario: formData.userType // Enviar tipo de usuário
+                    tipoUsuario: formData.userType,
+                    ...(formData.userType === "aluno" && { grupoId: formData.grupoId })
                 }),
             })
-            .then(response => response.text())
-            .then(text => {
-                console.log("Resposta do servidor:", text);
-                if (text.toLowerCase().includes("sucesso")) {
-                    navigate("/");
-                } else {
-                    setErrors({ api: text || "Erro no registro" });
-                }
-            })
-            .catch(error => {
-                setErrors({ api: "Erro ao conectar com o servidor" });
-                console.error('Error:', error);
-            });
+                .then(response => response.text())
+                .then(text => {
+                    console.log("Resposta do servidor:", text);
+                    if (text.toLowerCase().includes("sucesso")) {
+                        navigate("/");
+                    } else {
+                        setErrors({ api: text || "Erro no registro" });
+                    }
+                })
+                .catch(error => {
+                    setErrors({ api: "Erro ao conectar com o servidor" });
+                    console.error('Error:', error);
+                });
         }
     };
 
@@ -115,7 +124,7 @@ const Register = () => {
         <div className="container">
             <form onSubmit={handleSubmit}>
                 <h1>Registrar na Incubadora</h1>
-                
+
                 <div className="input-field">
                     <input
                         type="text"
@@ -128,7 +137,7 @@ const Register = () => {
                     <FaUserTag className="icon" />
                     {errors.fullName && <p className="error-message">{errors.fullName}</p>}
                 </div>
-                
+
                 <div className="input-field">
                     <input
                         type="email"
@@ -141,7 +150,7 @@ const Register = () => {
                     <FaEnvelope className="icon" />
                     {errors.email && <p className="error-message">{errors.email}</p>}
                 </div>
-                
+
                 <div className="input-field">
                     <input
                         type="password"
@@ -154,7 +163,7 @@ const Register = () => {
                     <FaLock className="icon" />
                     {errors.password && <p className="error-message">{errors.password}</p>}
                 </div>
-                
+
                 <div className="input-field">
                     <input
                         type="password"
@@ -182,8 +191,22 @@ const Register = () => {
                     </select>
                 </div>
 
+                {formData.userType === "aluno" && (
+                    <div className="input-field">
+                        <input
+                            type="text"
+                            name="grupoId"
+                            placeholder="ID do Grupo"
+                            value={formData.grupoId}
+                            onChange={handleChange}
+                        />
+                        {errors.grupoId && <p className="error-message">{errors.grupoId}</p>}
+                    </div>
+                )}
+
+
                 {errors.api && <p className="error-message api-error">{errors.api}</p>}
-                
+
                 <button type="submit">Registrar</button>
 
                 <div className="login-link">

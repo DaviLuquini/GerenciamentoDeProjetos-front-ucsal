@@ -29,8 +29,7 @@ const Login = () => {
             const data = await response.json();
             const { role, token, id } = data;
 
-            // Armazena o token, role e id no localStorage
-            localStorage.setItem("token", token);
+            localStorage.setItem('token', token); 
             localStorage.setItem("role", role);
             localStorage.setItem("userId", id);
 
